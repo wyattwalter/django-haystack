@@ -660,8 +660,8 @@ class BaseSearchQuery(object):
         self.facets.add(self.backend.site.get_facet_field_name(field))
 
     def add_spatial(self, **kwargs):
-	if 'lat' not in kwargs or 'long' not in kwargs or 'radius' not in kwargs:
-	    raise SpatialError("spatial queries must be query with lat, long and radius at least")
+	if 'lat' not in kwargs or 'long' not in kwargs or 'distance' not in kwargs or 'sfield' not in kwargs:
+	    raise SpatialError("spatial queries must be query with sfield, lat, long and radius at least")
 	
 	self.spatial_query.update(kwargs)    
     
