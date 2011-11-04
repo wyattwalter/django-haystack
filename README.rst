@@ -1,4 +1,22 @@
 ========
+About this branch
+========
+
+:date: 2011/11/04
+
+Added spatial filtering as 
+discussed in http://groups.google.com/group/django-haystack/browse_thread/thread/d0e23d45c0baa300/cb5d29132735afaf
+but using haystack 2.* and geofiltering from Solr 3.4+
+
+Spatial filtering example
+
+>>> from haystack.query import SearchQuerySet
+>>> s = SearchQuerySet()
+>>> s.spatial(lat=9.671519, long=46.686754000000001, sfield='location',distance=10)
+
+
+
+========
 Haystack
 ========
 
