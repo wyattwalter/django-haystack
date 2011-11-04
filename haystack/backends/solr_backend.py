@@ -483,11 +483,8 @@ class SearchQuery(BaseSearchQuery):
             kwargs['spelling_query'] = spelling_query
 
         if self.spatial_query:
-#	    final_query = 'fq={!geofilt pt=%s,%s sfield=%s d=%s}' % (9.671519, 46.686754000000001, 'location', 13)
-	    final_query = 'fq={!geofilt pt=%s,%s sfield=%s d=%s}' % (kwargs['lat'], kwargs['long'], kwargs['sfield'], kwargs['distance'])
-        
-        print final_query
-        
+            kwargs['spatial_query'] = 'fq={!geofilt pt=%s,%s sfield=%s d=%s}' % (self.spatial_query['lat'], self.spatial_query['long'], self.spatial_query['sfield'], self.spatial_query['distance'])
+
         results = self.backend.search(final_query, **kwargs)
         self._results = results.get('results', [])
         self._hit_count = results.get('hits', 0)
