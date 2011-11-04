@@ -8,7 +8,7 @@ from django.db.models.base import ModelBase
 from django.utils import tree
 from django.utils.encoding import force_unicode
 from haystack.constants import DJANGO_CT, VALID_FILTERS, FILTER_SEPARATOR
-from haystack.exceptions import SearchBackendError, MoreLikeThisError, FacetingError
+from haystack.exceptions import SearchBackendError, MoreLikeThisError, FacetingError, SpatialError
 from haystack.models import SearchResult
 try:
     from django.utils import importlib
@@ -286,6 +286,7 @@ class BaseSearchQuery(object):
         self.end_offset = None
         self.highlight = False
         self.facets = set()
+	self.spatial_query = {}
         self.date_facets = {}
         self.query_facets = []
         self.narrow_queries = set()
@@ -657,6 +658,12 @@ class BaseSearchQuery(object):
     def add_field_facet(self, field):
         """Adds a regular facet on a field."""
         self.facets.add(self.backend.site.get_facet_field_name(field))
+
+    def add_spatial(self, **kwargs):
+	if 'lat' not in kwargs or 'long' not in kwargs or 'radius' not in kwargs:
+	    raise SpatialError("spatial queries must be query with lat, long and radius at least")
+	
+	self.spatial_query.update(kwargs)    
     
     def add_date_facet(self, field, start_date, end_date, gap_by, gap_amount=1):
         """Adds a date-based facet on a field."""
@@ -737,6 +744,7 @@ class BaseSearchQuery(object):
         clone.facets = self.facets.copy()
         clone.date_facets = self.date_facets.copy()
         clone.query_facets = self.query_facets[:]
+        clone.spatial_query = self.spatial_query.copy()
         clone.narrow_queries = self.narrow_queries.copy()
         clone.start_offset = self.start_offset
         clone.end_offset = self.end_offset
