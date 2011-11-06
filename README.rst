@@ -6,7 +6,7 @@ About this branch
 
 Added spatial filtering as 
 discussed in http://groups.google.com/group/django-haystack/browse_thread/thread/d0e23d45c0baa300/cb5d29132735afaf
-but using haystack 2.* and geofiltering from Solr 3.4+
+but using haystack 1.2.* (so all changes are in the 1.2.X branch at the moment) and geofiltering from Solr 3.4+
 
 Spatial filtering example
 
