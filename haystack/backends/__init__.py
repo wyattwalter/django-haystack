@@ -286,7 +286,7 @@ class BaseSearchQuery(object):
         self.end_offset = None
         self.highlight = False
         self.facets = set()
-	self.spatial_query = {}
+        self.spatial_query = {}
         self.date_facets = {}
         self.query_facets = []
         self.narrow_queries = set()
@@ -660,10 +660,10 @@ class BaseSearchQuery(object):
         self.facets.add(self.backend.site.get_facet_field_name(field))
 
     def add_spatial(self, **kwargs):
-	if 'lat' not in kwargs or 'long' not in kwargs or 'distance' not in kwargs or 'sfield' not in kwargs:
-	    raise SpatialError("spatial queries must be query with sfield, lat, long and radius at least")
-	
-	self.spatial_query.update(kwargs)    
+        if 'lat' not in kwargs or 'long' not in kwargs or 'distance' not in kwargs or 'sfield' not in kwargs:
+            raise SpatialError("spatial queries must be query with sfield, lat, long and radius at least")
+
+        self.spatial_query.update(kwargs)
     
     def add_date_facet(self, field, start_date, end_date, gap_by, gap_amount=1):
         """Adds a date-based facet on a field."""

@@ -190,10 +190,9 @@ class SearchBackend(BaseSearchBackend):
             kwargs['fq'] = list(narrow_queries)
 
         if spatial_query is not None:
-    	    if type(kwargs['fq']) <> type(list()):
-    		kwargs['fq'] = list()
-    	    
-    	    kwargs['fq'].append(spatial_query)
+            if type(kwargs['fq']) <> type(list()):
+                kwargs['fq'] = list()
+            kwargs['fq'].append(spatial_query)
         
         try:
             raw_results = self.conn.search(query_string, **kwargs)
@@ -490,7 +489,10 @@ class SearchQuery(BaseSearchQuery):
             kwargs['spelling_query'] = spelling_query
 
         if self.spatial_query:
-            kwargs['spatial_query'] = '{!geofilt pt=%s,%s sfield=%s d=%s}' % (self.spatial_query['lat'], self.spatial_query['long'], self.spatial_query['sfield'], self.spatial_query['distance'])
+            kwargs['spatial_query'] = '{!geofilt pt=%s,%s sfield=%s d=%s}' % (self.spatial_query['lat'],
+                                                                              self.spatial_query['long'],
+                                                                              self.spatial_query['sfield'],
+                                                                              self.spatial_query['distance'])
 
         results = self.backend.search(final_query, **kwargs)
         self._results = results.get('results', [])
