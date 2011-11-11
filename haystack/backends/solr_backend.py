@@ -128,7 +128,7 @@ class SearchBackend(BaseSearchBackend):
         
         if sort_by is not None:
             kwargs['sort'] = sort_by
-        
+
         if start_offset is not None:
             kwargs['start'] = start_offset
         
@@ -192,8 +192,14 @@ class SearchBackend(BaseSearchBackend):
         if spatial_query is not None:
             if type(kwargs['fq']) <> type(list()):
                 kwargs['fq'] = list()
-            kwargs['fq'].append(spatial_query)
-        
+
+            kwargs['fq'].append('{!geofilt pt=%s,%s sfield=%s d=%s}' % (spatial_query['lat'],
+                                                                        spatial_query['long'],
+                                                                        spatial_query['sfield'],
+                                                                        spatial_query['distance']))
+            kwargs['sfield'] = spatial_query['sfield']
+            kwargs['pt'] = '%s,%s' % (spatial_query['lat'], spatial_query['long'])
+
         try:
             raw_results = self.conn.search(query_string, **kwargs)
         except (IOError, SolrError), e:
@@ -466,7 +472,7 @@ class SearchQuery(BaseSearchQuery):
                     order_by_list.append('%s asc' % order_by)
             
             kwargs['sort_by'] = ", ".join(order_by_list)
-        
+
         if self.end_offset is not None:
             kwargs['end_offset'] = self.end_offset
         
@@ -489,10 +495,7 @@ class SearchQuery(BaseSearchQuery):
             kwargs['spelling_query'] = spelling_query
 
         if self.spatial_query:
-            kwargs['spatial_query'] = '{!geofilt pt=%s,%s sfield=%s d=%s}' % (self.spatial_query['lat'],
-                                                                              self.spatial_query['long'],
-                                                                              self.spatial_query['sfield'],
-                                                                              self.spatial_query['distance'])
+            kwargs['spatial_query'] = self.spatial_query
 
         results = self.backend.search(final_query, **kwargs)
         self._results = results.get('results', [])
