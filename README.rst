@@ -12,7 +12,7 @@ Spatial filtering example
 
 >>> from haystack.query import SearchQuerySet
 >>> s = SearchQuerySet()
->>> s.spatial(lat=9.671519, long=46.686754000000001, sfield='location',distance=10)
+>>> s.spatial(lat=9.671519, long=46.686754000000001, sfield='location',distance=10).order_by('geodist()')
 
 ========
 Haystack
