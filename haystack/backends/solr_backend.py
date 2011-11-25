@@ -5,7 +5,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db.models.loading import get_model
 from haystack.backends import BaseSearchBackend, BaseSearchQuery, log_query, EmptyResults
 from haystack.constants import ID, DJANGO_CT, DJANGO_ID
-from haystack.exceptions import MissingDependency, MoreLikeThisError
+from haystack.exceptions import MissingDependency, MoreLikeThisError, SpatialError
 from haystack.models import SearchResult
 from haystack.utils import get_identifier
 try:
@@ -109,7 +109,7 @@ class SearchBackend(BaseSearchBackend):
                 self.log.error("Failed to clear Solr index: %s", e)
     
     @log_query
-    def search(self, query_string, sort_by=None, start_offset=0, end_offset=None,
+    def search(self, query_string, sort_by=None, sort_by_distance=None, start_offset=0, end_offset=None,
                fields='', highlight=False, facets=None, date_facets=None, query_facets=None,
                narrow_queries=None, spelling_query=None, spatial_query=None,
                limit_to_registered_models=None, result_class=None, **kwargs):
@@ -128,6 +128,10 @@ class SearchBackend(BaseSearchBackend):
         
         if sort_by is not None:
             kwargs['sort'] = sort_by
+
+        if sort_by_distance is not None:
+            kwargs['sfield'] = sort_by_distance['sfield']
+            kwargs['pt'] = '{0},{1}'.format(sort_by_distance['lat'], sort_by_distance['long'])
 
         if start_offset is not None:
             kwargs['start'] = start_offset
@@ -197,8 +201,6 @@ class SearchBackend(BaseSearchBackend):
                                                                         spatial_query['long'],
                                                                         spatial_query['sfield'],
                                                                         spatial_query['distance']))
-            kwargs['sfield'] = spatial_query['sfield']
-            kwargs['pt'] = '%s,%s' % (spatial_query['lat'], spatial_query['long'])
 
         try:
             raw_results = self.conn.search(query_string, **kwargs)
@@ -407,6 +409,15 @@ class SearchQuery(BaseSearchQuery):
     def matching_all_fragment(self):
         return '*:*'
 
+    def add_order_by_distance(self, **kwargs):
+        """Orders the search result by distance from point."""
+
+        if 'lat' not in kwargs or 'long' not in kwargs or 'sfield' not in kwargs:
+            #TODO fix message
+            raise SpatialError("to sort by distance you must provide sfield, lat and long")
+
+        self.order_by_distance.update(kwargs)
+
     def build_query_fragment(self, field, filter_type, value):
         result = ''
         
@@ -461,16 +472,23 @@ class SearchQuery(BaseSearchQuery):
             'start_offset': self.start_offset,
             'result_class': self.result_class,
         }
-        
-        if self.order_by:
+
+        if self.order_by_distance:
             order_by_list = []
+            order_by_list.append('geodist() asc')
+            kwargs['sort_by_distance'] = self.order_by_distance
+
+        if self.order_by:
+            if not locals().has_key('order_by_list'):
+                order_by_list = []
             
             for order_by in self.order_by:
                 if order_by.startswith('-'):
                     order_by_list.append('%s desc' % order_by[1:])
                 else:
                     order_by_list.append('%s asc' % order_by)
-            
+
+        if locals().has_key('order_by_list'):
             kwargs['sort_by'] = ", ".join(order_by_list)
 
         if self.end_offset is not None:

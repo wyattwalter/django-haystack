@@ -280,6 +280,7 @@ class BaseSearchQuery(object):
     def __init__(self, site=None, backend=None):
         self.query_filter = SearchNode()
         self.order_by = []
+        self.order_by_distance = {}
         self.models = set()
         self.boost = {}
         self.start_offset = 0
@@ -342,7 +343,10 @@ class BaseSearchQuery(object):
         
         if self.order_by:
             kwargs['sort_by'] = self.order_by
-        
+
+        if self.order_by_distance:
+            kwargs['sort_by_distance'] = self.order_by_distance
+
         if self.end_offset is not None:
             kwargs['end_offset'] = self.end_offset
         
@@ -594,7 +598,11 @@ class BaseSearchQuery(object):
     def add_order_by(self, field):
         """Orders the search result by a field."""
         self.order_by.append(field)
-    
+
+    def add_order_by_distance(self, **kwargs):
+        """Orders the search result by distance from point."""
+        pass
+
     def clear_order_by(self):
         """
         Clears out all ordering that has been already added, reverting the
@@ -738,6 +746,7 @@ class BaseSearchQuery(object):
         clone = klass()
         clone.query_filter = deepcopy(self.query_filter)
         clone.order_by = self.order_by[:]
+        clone.order_by_distance = self.order_by_distance.copy()
         clone.models = self.models.copy()
         clone.boost = self.boost.copy()
         clone.highlight = self.highlight
