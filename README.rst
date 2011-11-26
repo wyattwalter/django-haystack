@@ -14,7 +14,7 @@ Spatial filtering example
 >>> s = SearchQuerySet()
 >>> s.spatial(lat=9.671519, long=46.686754000000001, sfield='location',distance=10)
 
-
+See more here - https://github.com/frutik/django-haystack/blob/1.2.X/README.rst
 
 ========
 Haystack
