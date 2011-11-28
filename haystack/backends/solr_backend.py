@@ -424,7 +424,17 @@ class SearchQuery(BaseSearchQuery):
         # Handle when we've got a ``ValuesListQuerySet``...
         if hasattr(value, 'values_list'):
             value = list(value)
-        
+
+        index_fieldname = self.backend.site.get_index_fieldname(field)
+
+        if value is None:
+            # backported https://github.com/soby/django-haystack/commit/9332a91a7f0e4b33d7e20aa892d156305c12dfe3
+            # The filter is for a document field with the value of None.
+            # As an optimization, we wouldn't have stored that field on the document,
+            # so we're really looking for documents without this field at all.
+            # Return solr's search filter for the empty fields
+            return ' -%s:[* TO *]' % index_fieldname
+
         if not isinstance(value, (set, list, tuple)):
             # Convert whatever we find to what pysolr wants.
             value = self.backend.conn._from_python(value)
@@ -432,9 +442,7 @@ class SearchQuery(BaseSearchQuery):
         # Check to see if it's a phrase for an exact match.
         if ' ' in value:
             value = '"%s"' % value
-        
-        index_fieldname = self.backend.site.get_index_fieldname(field)
-        
+
         # 'content' is a special reserved word, much like 'pk' in
         # Django's ORM layer. It indicates 'no special field'.
         if field == 'content':
