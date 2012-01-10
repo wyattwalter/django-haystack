@@ -2,6 +2,14 @@
 About this branch
 ========
 
+:date: 2012/01/09
+
+Added LocationField to Haystack and location data type to Solr backend code based upon Yun Fu's blog: http://fuyun.org/2011/11/add-solr-spatial-search-for-djang-haystack/
+
+Add field to Index like this:
+>>> location = LocationField(model_lat_attr='lat', model_lng_attr='lng')
+
+
 :date: 2011/11/04
 
 Added spatial filtering as 
