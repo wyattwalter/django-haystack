@@ -395,3 +395,27 @@ class FacetDateTimeField(FacetField, DateTimeField):
 
 class FacetMultiValueField(FacetField, MultiValueField):
     pass
+
+class LocationField(SearchField):
+    field_type = 'location'
+
+    def __init__(self, model_lat_attr=None, model_lng_attr=None, **kwargs):
+        if kwargs.get('faceted') is True:
+            raise SearchFieldError("%s can not be faceted." % self.__class__.__name__)
+        super(LocationField, self).__init__(**kwargs)
+        self.model_lat_attr = model_lat_attr
+        self.model_lng_attr = model_lng_attr
+
+    def prepare(self, obj):
+        if self.model_lat_attr != None and self.model_lng_attr != None:
+            lat = getattr(obj, self.model_lat_attr, None)
+            lng = getattr(obj, self.model_lng_attr, None)
+            if lat != None and lng != None:
+                location = '%s,%s'%(obj.lat(), obj.lng())
+                return self.convert(location)
+        return self.convert(super(LocationField, self).prepare(obj))
+
+    def convert(self, value):
+        if value is None:
+            return None
+        return unicode(value)

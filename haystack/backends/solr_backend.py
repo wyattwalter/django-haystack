@@ -370,6 +370,8 @@ class SearchBackend(BaseSearchBackend):
                 field_data['type'] = 'ngram'
             elif field_class.field_type == 'edge_ngram':
                 field_data['type'] = 'edge_ngram'
+            elif field_class.field_type == 'location':
+                field_data['type'] = 'location'
             
             if field_class.is_multivalued:
                 field_data['multi_valued'] = 'true'
